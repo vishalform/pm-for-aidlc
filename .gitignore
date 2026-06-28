@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# OS / editor
+.DS_Store
+*.swp
+
+# Validation scratch (red-team / judge / link-check artifacts)
+.pm-loop/
+
+# Generated data is committed on purpose (data/aidlc_axes.csv); do not ignore it.

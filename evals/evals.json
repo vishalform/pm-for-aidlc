@@ -1,0 +1,167 @@
+{
+  "about": "Self-eval suite for pm-for-aidlc. gate_scenarios / routing_scenarios / stats_scenarios are auto-verified by run_evals.py against the real scripts; trigger_scenarios document should/should-not-fire expectations for manual or subagent testing. The negative gate + stats scenarios are regression guards for the hardened fixes (C1/C2/H1 round 1; C-A/H-A/M-1..M-5 round 2) — they MUST catch a reverted bug, not just pin current behavior. Round-2 guards: NEG-actuating-safety-low-blast-derived (C-A), gate-regression-nogo / gate-clean-go (H-A paired), judge-trusted-fixture (M-1), cost_calc-selftest, and held-out safety paraphrase + homograph routing (M-2/M-3).",
+  "gate_scenarios": [
+    {
+      "id": "gate-at56-groundedness-monitor",
+      "desc": "AT-56 read-only groundedness monitor (blast:low from bundle): autonomous+gated+safety:high stays unattended, NO canary.",
+      "task_id": "AT-56",
+      "expect_mode": "run_unattended",
+      "expect_controls_include": ["eval_gate", "safety_gate"],
+      "expect_controls_exclude": ["canary_or_shadow", "human_confirm"],
+      "expect_blast": "low"
+    },
+    {
+      "id": "gate-at47-contamination-gate",
+      "desc": "AT-47 automated leakage gate: autonomous gated producer stays unattended with provenance.",
+      "task_id": "AT-47",
+      "expect_mode": "run_unattended",
+      "expect_controls_include": ["eval_gate", "canary_or_shadow", "provenance_log"]
+    },
+    {
+      "id": "gate-at20-prompt-ci",
+      "desc": "AT-20 prompt regression CI: autonomous+gated+regr:high but blast:low -> unattended, eval-gate, NO canary/human_confirm.",
+      "task_id": "AT-20",
+      "expect_mode": "run_unattended",
+      "expect_controls_include": ["eval_gate"],
+      "expect_controls_exclude": ["canary_or_shadow", "human_confirm"]
+    },
+    {
+      "id": "gate-at08-eval-rubric",
+      "desc": "AT-08 write eval rubric: human-led producer.",
+      "task_id": "AT-08",
+      "expect_mode": "human_led",
+      "expect_controls_include": ["eval_gate", "provenance_log"]
+    },
+    {
+      "id": "gate-at03-thumbsdown-triage",
+      "desc": "AT-03 thumbs-down triage: copilot partial-eval producer -> draft + human confirm + provenance.",
+      "task_id": "AT-03",
+      "expect_mode": "draft_then_confirm",
+      "expect_controls_include": ["human_confirm", "provenance_log"]
+    },
+    {
+      "id": "gate-at53-rollback",
+      "desc": "AT-53 rollback: human-led, blast:high, safety:high.",
+      "task_id": "AT-53",
+      "expect_mode": "human_led",
+      "expect_controls_include": ["human_confirm", "canary_or_shadow", "safety_gate", "eval_gate"]
+    },
+    {
+      "id": "gate-at72-data-rights",
+      "desc": "AT-72 data-rights posture: human-led, eval:none, safety:high, producer.",
+      "task_id": "AT-72",
+      "expect_mode": "human_led",
+      "expect_controls_include": ["human_confirm", "provenance_log", "safety_gate"]
+    },
+    {
+      "id": "gate-inversion-ungraded-autonomous",
+      "desc": "The key inversion: autonomous but eval:none -> never unattended (blast given low to isolate the inversion).",
+      "axes": {"leverage": "autonomous", "blast": "low", "eval": "none", "regr": "low", "safety": "none", "fly": "none"},
+      "expect_mode": "draft_then_confirm",
+      "expect_controls_exclude": ["eval_gate"]
+    },
+    {
+      "id": "NEG-actuating-safety-high",
+      "desc": "C1 GUARD: an actuating (non read-only) autonomous safety:high task must NOT run unattended.",
+      "axes": {"leverage": "autonomous", "blast": "med", "eval": "gated", "regr": "med", "safety": "high", "fly": "none"},
+      "expect_mode_not": "run_unattended",
+      "expect_controls_include": ["human_confirm", "safety_gate"]
+    },
+    {
+      "id": "NEG-actuating-safety-irreversible",
+      "desc": "C1 GUARD: explicit irreversible actuation + safety:high never unattended even at blast:low.",
+      "axes": {"leverage": "autonomous", "blast": "low", "eval": "gated", "regr": "low", "safety": "high", "fly": "none"},
+      "actuation": "irreversible",
+      "expect_mode_not": "run_unattended",
+      "expect_controls_include": ["human_confirm"]
+    },
+    {
+      "id": "NEG-blast-unknown-not-unattended",
+      "desc": "C2 GUARD: blast omitted (unknown) must NOT bless an unattended run.",
+      "axes": {"leverage": "autonomous", "blast": null, "eval": "gated", "regr": "low", "safety": "none", "fly": "none"},
+      "expect_mode_not": "run_unattended",
+      "expect_controls_include": ["human_confirm"]
+    },
+    {
+      "id": "NEG-actuating-safety-low-blast-derived",
+      "desc": "C-A GUARD: autonomous+gated+safety:high at blast:low with NO --actuation must NOT run unattended (actuation derives to reversible, not read-only — the carve-out must be asserted).",
+      "axes": {"leverage": "autonomous", "blast": "low", "eval": "gated", "regr": "low", "safety": "high", "fly": "none"},
+      "expect_mode_not": "run_unattended",
+      "expect_controls_include": ["human_confirm", "safety_gate"]
+    },
+    {
+      "id": "NEG-regr-high-eval-none-build-first",
+      "desc": "M3 GUARD: regr:high + eval:none must emit build_eval_first, NOT an unsatisfiable eval_gate.",
+      "axes": {"leverage": "copilot", "blast": "low", "eval": "none", "regr": "high", "safety": "none", "fly": "none"},
+      "expect_controls_include": ["build_eval_first"],
+      "expect_controls_exclude": ["eval_gate"]
+    },
+    {
+      "id": "overlay-high-stakes-passhatk",
+      "desc": "P5 GUARD: external-high-stakes overlay sets gate_metric=pass^k and adds canary+safety_gate.",
+      "task_id": "AT-30",
+      "modality": "multi-agent",
+      "risk_tier": "external-high-stakes",
+      "expect_gate_metric": "pass^k",
+      "expect_controls_include": ["canary_or_shadow", "safety_gate", "human_confirm"]
+    },
+    {
+      "id": "gate-safety-med-adds-gate",
+      "desc": "L-1 GUARD: safety:med must add safety_gate (axis is 3-valued, not binary) with NO human downgrade.",
+      "axes": {"leverage": "autonomous", "blast": "low", "eval": "gated", "regr": "low", "safety": "med", "fly": "none"},
+      "expect_mode": "run_unattended",
+      "expect_controls_include": ["safety_gate"],
+      "expect_controls_exclude": ["human_confirm"]
+    }
+  ],
+  "routing_scenarios": [
+    {"id": "route-eval-regression-rca", "prompt": "the eval score dropped after the last deploy, find the root cause", "expect_task_ids_any": ["AT-61", "EVL-14"], "expect_cluster_contains": "Measurement"},
+    {"id": "route-write-scorer", "prompt": "write the scoring function rubric for our summarizer capability", "expect_task_ids_any": ["AT-08", "AT-10", "AT-11"], "expect_cluster_contains": "Eval"},
+    {"id": "route-model-bakeoff", "prompt": "run a bake-off to choose a model on our eval set", "expect_task_ids_any": ["AT-29", "AT-30"], "expect_cluster_contains": "System"},
+    {"id": "route-groundedness-monitor", "prompt": "monitor that every number in the output traces to a tool call", "expect_task_ids_any": ["AT-56"], "expect_cluster_contains": "Measurement", "top": 3},
+    {"id": "route-judge-validation", "prompt": "validate our llm judge against human labels and measure agreement", "expect_task_ids_any": ["AT-12", "EVL-08", "EVL-09"], "expect_cluster_contains": "Eval"},
+    {"id": "route-contamination", "prompt": "check whether training data leaked into the eval set", "expect_task_ids_any": ["AT-47"], "expect_cluster_contains": "Training"},
+    {"id": "route-redteam", "prompt": "design a red-team campaign to find jailbreaks in the agent", "expect_task_ids_any": ["AT-63", "AT-64"], "expect_cluster_contains": "Safety"},
+    {"id": "route-canary", "prompt": "plan a canary rollout for a model change gated on online scores", "expect_task_ids_any": ["AT-51", "EVL-16"], "expect_cluster_contains": "Delivery"},
+    {"id": "route-SAFETY-prompt-injection", "prompt": "someone tricked the bot into ignoring its instructions", "expect_task_ids_any": ["AT-63", "AT-64", "AT-65"], "expect_cluster_contains": "Safety", "top": 3},
+    {"id": "route-SAFETY-pii-leak", "prompt": "the model keeps leaking PII in responses", "expect_task_ids_any": ["AT-68", "AT-72", "AT-65"], "expect_cluster_contains": "Safety", "top": 3},
+    {"id": "route-SAFETY-runtime-guardrails", "prompt": "set up guardrails to block jailbreaks at runtime", "expect_task_ids_any": ["AT-65"], "expect_cluster_contains": "Safety", "top": 3},
+    {"id": "route-prd-is-eval", "prompt": "write a PRD for our new AI feature", "expect_task_ids_any": ["AT-08"], "top": 3},
+    {"id": "route-SAFETY-reveal-sysprompt", "prompt": "someone got the agent to reveal its hidden system prompt", "expect_task_ids_any": ["AT-63", "AT-64", "AT-65"], "expect_cluster_contains": "Safety", "top": 3, "_note": "M-3: held-out paraphrase NOT in the trigger list"},
+    {"id": "route-SAFETY-manipulate-offensive", "prompt": "users keep manipulating the model into saying offensive things", "expect_cluster_contains": "Safety", "top": 3, "_note": "M-3: held-out paraphrase"},
+    {"id": "route-NEG-memory-leak", "prompt": "fix the memory leak in our inference server", "expect_cluster_excludes": "Safety", "top": 3, "_note": "M-2: homograph must NOT route to Safety"},
+    {"id": "route-NEG-dependency-injection", "prompt": "set up dependency injection in the agent codebase", "expect_cluster_excludes": "Safety", "top": 3, "_note": "M-2: homograph must NOT route to Safety"},
+    {"id": "route-NEG-system-injection", "prompt": "configure dependency injection across the system modules", "expect_cluster_excludes": "Safety", "top": 3, "_note": "M3-2: generic 'system' co-token must NOT route to Safety (held-out, not the literal guard string)"},
+    {"id": "route-NEG-user-leak", "prompt": "fix the file descriptor leak in the user service", "expect_cluster_excludes": "Safety", "top": 3, "_note": "M3-2: generic 'user' co-token must NOT route to Safety (held-out)"},
+    {"id": "route-SAFETY-api-keys", "prompt": "the model can be prompted to print its api keys", "expect_cluster_contains": "Safety", "top": 3, "_note": "M3-6: secret exfiltration without the word 'leak'"},
+    {"id": "route-SAFETY-confidential-records", "prompt": "the assistant revealed confidential customer records to another user", "expect_cluster_contains": "Safety", "top": 3, "_note": "M3-6: data exposure paraphrase"},
+    {"id": "route-NEG-weak-match", "prompt": "fix the css on the login button", "expect_weak_match": true}
+  ],
+  "stats_scenarios": [
+    {"id": "stat-eval_stats-selftest", "cmd": ["eval_stats.py", "selftest"], "expect_exit": 0, "desc": "golden math checks incl. the pass^k(c>n) guard"},
+    {"id": "stat-passk-c-gt-n-guard", "cmd": ["eval_stats.py", "passk", "--n", "5", "--c", "10", "--k", "1"], "expect_exit": 1, "desc": "M2: c>n must error, not return pass^k=2.0"},
+    {"id": "stat-judge-underpowered-not-trusted", "cmd": ["judge_validation.py", "--labels", "FIXTURES/judge_underpowered.csv"], "expect_exit": 0, "expect_json": {"verdict": "NOT VALIDATED"}, "desc": "H1: perfect point estimate but wide CI -> not TRUSTED"},
+    {"id": "stat-contamination-exit2", "cmd": ["contamination_check.py", "--train", "FIXTURES/contam_train.txt", "--eval", "FIXTURES/contam_eval.txt", "--threshold", "0.8"], "expect_exit": 2, "desc": "leakage gate exits 2 on a known (exact) dup"},
+    {"id": "stat-cost_calc-selftest", "cmd": ["cost_calc.py", "selftest"], "expect_exit": 0, "desc": "cost math golden checks incl. margin inversion"},
+    {"id": "stat-gate-regression-nogo", "cmd": ["eval_gate.py", "--results", "FIXTURES/gate_cand.jsonl", "--bar", "FIXTURES/gate_bar.json", "--baseline", "FIXTURES/gate_base.jsonl"], "expect_exit": 1, "desc": "H-A: a paired regression (12 losses/0 gains) is NO-GO even though the bar passes"},
+    {"id": "stat-gate-clean-go", "cmd": ["eval_gate.py", "--results", "FIXTURES/gate_base.jsonl", "--bar", "FIXTURES/gate_bar.json", "--baseline", "FIXTURES/gate_base.jsonl"], "expect_exit": 0, "desc": "no regression vs identical baseline and bar passes -> GO"},
+    {"id": "stat-judge-trusted", "cmd": ["judge_validation.py", "--labels", "FIXTURES/judge_trusted.csv"], "expect_exit": 0, "expect_json": {"verdict": "TRUSTED"}, "desc": "M-1: a strong judge at 100 balanced labels certifies TRUSTED on the full-set CI lower bound"},
+    {"id": "stat-contamination-template-warn", "cmd": ["contamination_check.py", "--train", "FIXTURES/contam_template_train.txt", "--eval", "FIXTURES/contam_template_eval.txt"], "expect_exit": 0, "desc": "M-4 GUARD: template-only overlap WARNs (exit 0), does not block a clean set"},
+    {"id": "stat-contamination-strict-block", "cmd": ["contamination_check.py", "--train", "FIXTURES/contam_template_train.txt", "--eval", "FIXTURES/contam_template_eval.txt", "--strict-template"], "expect_exit": 2, "desc": "M-4 GUARD: --strict-template makes template hits block (exit 2)"},
+    {"id": "stat-compare-paired-significant", "cmd": ["eval_stats.py", "compare", "--a", "FIXTURES/cmp_base.txt", "--b", "FIXTURES/cmp_win.txt"], "expect_exit": 0, "expect_json": {"paired": true, "significant": true}, "desc": "H-A/M3-3 GUARD: paired-by-default compare flags a strict paired win (McNemar)"},
+    {"id": "stat-compare-unpaired-misses", "cmd": ["eval_stats.py", "compare", "--a", "FIXTURES/cmp_base.txt", "--b", "FIXTURES/cmp_win.txt", "--unpaired"], "expect_exit": 0, "expect_json": {"paired": false, "significant": false}, "desc": "H-A GUARD: the unpaired test misses the same paired win (demonstrates the fix's value)"},
+    {"id": "stat-gate-coverage-gap-nogo", "cmd": ["eval_gate.py", "--results", "FIXTURES/gate_subset.jsonl", "--bar", "FIXTURES/gate_bar.json", "--baseline", "FIXTURES/gate_base.jsonl"], "expect_exit": 1, "desc": "M3-1 GUARD: a candidate that drops baseline case_ids (coverage gap) is NO-GO even with no regression on the reported cases"}
+  ],
+  "trigger_scenarios": [
+    {"id": "trig-eval-support", "prompt": "write an eval for our support agent's refusals", "should_trigger": true, "reason": "core eval-spec work on an AI system"},
+    {"id": "trig-hallucination", "prompt": "our agent hallucinated a policy in production", "should_trigger": true, "reason": "trace triage + groundedness, no keyword needed"},
+    {"id": "trig-no-keyword-grounding", "prompt": "make sure every number in the report comes from a query and alert if it doesn't", "should_trigger": true, "reason": "groundedness monitoring described without saying eval/AIDLC"},
+    {"id": "trig-prompt-injection", "prompt": "a user jailbroke our assistant to ignore its system prompt", "should_trigger": true, "reason": "safety/red-team incident"},
+    {"id": "trig-cost-dashboard", "prompt": "build a cost/latency/quality dashboard for our agent", "should_trigger": true, "reason": "measurement + inference economics"},
+    {"id": "trig-not-pricing", "prompt": "set the price tiers for our SaaS seats", "should_trigger": false, "reason": "classic commercial PM, no AI-system quality angle (near-miss)"},
+    {"id": "trig-not-discovery", "prompt": "run a customer discovery interview about onboarding", "should_trigger": false, "reason": "classic discovery, model-agnostic (near-miss)"},
+    {"id": "trig-not-funnel", "prompt": "analyze last month's signup funnel drop-off", "should_trigger": false, "reason": "pure product analytics, no model quality (near-miss)"},
+    {"id": "trig-not-dashboard-signups", "prompt": "build a dashboard for signups", "should_trigger": false, "reason": "generic product dashboard vs an agent cost/quality dashboard (near-miss)"},
+    {"id": "trig-not-aidlc-aws", "prompt": "use an AI coding agent to refactor our backend faster", "should_trigger": false, "reason": "AWS AI-DLC (build software faster), a different problem"}
+  ]
+}

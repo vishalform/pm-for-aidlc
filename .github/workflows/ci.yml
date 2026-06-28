@@ -1,0 +1,21 @@
+name: self-test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  evals:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Run the skill self-tests (Python stdlib only — no install step)
+        run: |
+          python evals/run_evals.py
+          python scripts/eval_stats.py selftest
+          python scripts/cost_calc.py selftest
+          python scripts/build_axes.py --check

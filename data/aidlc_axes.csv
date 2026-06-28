@@ -1,0 +1,103 @@
+id,leverage,blast,eval,regr,safety,fly,actuation,phase_status,cluster,name
+AT-01,copilot,low,partial,low,med,consumer,reversible,now,Discovery & Capability Mapping,Mine production traces into failure-mode clusters
+AT-02,copilot,low,partial,low,none,none,reversible,now,Discovery & Capability Mapping,Run a capability-elicitation probe on a new model
+AT-03,copilot,low,partial,low,med,producer,reversible,now,Discovery & Capability Mapping,Triage a thumbs-down or negative-feedback event
+AT-04,copilot,low,partial,med,med,none,reversible,now,Discovery & Capability Mapping,Build a use-case to eval-gap map
+AT-05,copilot,low,gated,low,none,none,reversible,now,Discovery & Capability Mapping,Competitive model or agent teardown on your eval set
+AT-06,copilot,low,partial,low,med,consumer,reversible,now,Discovery & Capability Mapping,Cluster negative feedback into quality themes
+AT-07,copilot,low,partial,med,none,consumer,reversible,now,Discovery & Capability Mapping,Mine tool-call logs for unreliable tools
+AT-08,human-led,med,gated,high,med,producer,reversible,now,Eval & Spec Definition (hub),Write the eval rubric or scoring function for a capability
+AT-09,copilot,med,partial,high,med,producer,reversible,now,Eval & Spec Definition (hub),Curate a golden eval dataset from prod traces
+AT-10,copilot,low,gated,med,none,producer,reversible,now,Eval & Spec Definition (hub),Design a single-dimension code-based scorer
+AT-11,copilot,med,partial,high,med,producer,reversible,now,Eval & Spec Definition (hub),Design an LLM-as-judge scorer and rubric
+AT-12,copilot,med,partial,high,med,producer,reversible,now,Eval & Spec Definition (hub),Calibrate an LLM judge against human labels
+AT-13,copilot,low,partial,med,med,none,reversible,now,Eval & Spec Definition (hub),Run an eval-coverage gap analysis
+AT-14,copilot,low,gated,med,none,none,reversible,now,Eval & Spec Definition (hub),Build slice and segment evals
+AT-15,autonomous,low,gated,med,none,none,reversible,now,Eval & Spec Definition (hub),Version and changelog an eval suite
+AT-16,human-led,med,gated,high,med,none,reversible,now,Eval & Spec Definition (hub),Define the release quality bar (eval thresholds)
+AT-17,copilot,low,gated,high,med,producer,reversible,now,Eval & Spec Definition (hub),Author adversarial and regression eval cases from an incident
+AT-18,copilot,low,gated,med,none,none,reversible,now,Eval & Spec Definition (hub),Run the weekly eval-score review
+AT-19,copilot,low,gated,high,med,none,reversible,now,System & Agent Design,Author and version a prompt in the registry
+AT-20,autonomous,low,gated,high,med,none,reversible,now,System & Agent Design,Prompt regression test before merge
+AT-21,copilot,low,partial,med,none,none,reversible,now,System & Agent Design,Context-window budget design
+AT-22,copilot,med,partial,high,med,none,reversible,now,System & Agent Design,Design or iterate a RAG retrieval pipeline
+AT-23,copilot,low,gated,high,med,none,reversible,now,System & Agent Design,Eval retrieval quality
+AT-24,copilot,med,partial,high,med,none,reversible,now,System & Agent Design,Design a tool or function schema
+AT-25,copilot,low,gated,high,med,none,reversible,now,System & Agent Design,Eval tool-call accuracy
+AT-26,copilot,med,partial,med,high,none,reversible,now,System & Agent Design,Select or evaluate an MCP server (governance + reliability)
+AT-27,copilot,high,partial,high,high,none,reversible,now,System & Agent Design,Design the agent loop or harness
+AT-28,copilot,med,partial,med,med,none,reversible,now,System & Agent Design,"Set the agent step, tool-call, and token budget"
+AT-29,copilot,med,gated,high,med,none,reversible,now,System & Agent Design,Run a model bake-off on your eval set
+AT-30,copilot,med,gated,high,med,none,reversible,now,System & Agent Design,Design a model routing policy
+AT-31,autonomous,low,gated,high,med,none,reversible,now,System & Agent Design,Run a prompt-optimization pass (DSPy/GEPA)
+AT-32,copilot,med,partial,med,high,none,reversible,now,System & Agent Design,Design agent memory
+AT-33,copilot,med,partial,high,med,producer,reversible,later,Data & Training Flywheel,Design a preference-data collection task
+AT-34,human-led,med,partial,high,med,producer,reversible,later,Data & Training Flywheel,Write annotation and rater guidelines
+AT-35,human-led,med,partial,high,med,producer,reversible,later,Data & Training Flywheel,Recruit and calibrate raters; measure inter-rater agreement
+AT-36,copilot,med,partial,high,med,producer,reversible,later,Data & Training Flywheel,Audit preference-data quality
+AT-37,human-led,high,gated,high,high,producer,reversible,later,Data & Training Flywheel,Spec a reward-model train and eval
+AT-38,copilot,high,partial,high,high,producer,reversible,later,Data & Training Flywheel,Detect reward hacking and reward-model gaming
+AT-39,copilot,high,partial,high,high,producer,reversible,later,Data & Training Flywheel,Design an RLAIF or Constitutional preference pipeline
+AT-40,copilot,med,partial,high,med,producer,reversible,later,Data & Training Flywheel,Curate an SFT dataset
+AT-41,copilot,high,gated,high,med,producer,reversible,later,Data & Training Flywheel,Plan a distillation run and eval gate
+AT-42,human-led,med,partial,med,none,none,reversible,now,Data & Training Flywheel,Decide fine-tune vs prompt vs RAG
+AT-43,human-led,high,gated,high,high,producer,reversible,later,Data & Training Flywheel,Author an RL environment (dataset + harness + reward)
+AT-44,copilot,med,partial,med,high,none,reversible,later,Data & Training Flywheel,Design a sandbox or tool emulator for an environment
+AT-45,human-led,high,gated,high,high,producer,reversible,later,Data & Training Flywheel,Design and anti-game a reward or verifier function
+AT-46,copilot,med,partial,high,med,producer,reversible,now,Data & Training Flywheel,Generate and validate synthetic data
+AT-47,autonomous,med,gated,high,none,producer,reversible,now,Data & Training Flywheel,Run a train/eval contamination and leakage check
+AT-48,copilot,med,partial,high,high,producer,reversible,now,Data & Training Flywheel,Wire the data flywheel (prod trace to dataset/eval/train)
+AT-49,autonomous,med,gated,high,med,none,reversible,now,Delivery & Release,Configure eval-gated CI
+AT-50,copilot,med,gated,high,none,none,reversible,now,Delivery & Release,Pin and version a model+prompt release bundle
+AT-51,copilot,high,gated,high,med,none,reversible,now,Delivery & Release,Plan a canary or shadow deployment for a model change
+AT-52,copilot,high,gated,high,med,none,reversible,now,Delivery & Release,Online A/B a model or prompt change with quality and business guardrails
+AT-53,human-led,high,gated,high,high,none,reversible,now,Delivery & Release,Execute a model or prompt rollback on quality regression
+AT-54,human-led,high,gated,high,high,none,reversible,now,Delivery & Release,Release-readiness go/no-go on eval and safety gates
+AT-55,copilot,med,gated,med,med,consumer,reversible,now,Measurement & Monitoring,Wire online scoring on production traffic
+AT-56,autonomous,low,gated,high,high,consumer,read-only,now,Measurement & Monitoring,Monitor hallucination and groundedness rate
+AT-57,copilot,med,partial,high,med,consumer,reversible,now,Measurement & Monitoring,Detect quality or behavior drift vs baseline
+AT-58,copilot,low,gated,med,med,producer,reversible,now,Measurement & Monitoring,Cluster online failures into a triage queue
+AT-59,copilot,low,partial,low,none,none,reversible,now,Measurement & Monitoring,Build a cost/latency/quality dashboard and per-task cost
+AT-60,copilot,med,partial,med,med,producer,reversible,now,Measurement & Monitoring,Wire human feedback (thumbs/edits) into the flywheel
+AT-61,copilot,med,partial,high,med,none,reversible,now,Measurement & Monitoring,Investigate an eval-score regression (RCA)
+AT-62,copilot,med,partial,high,med,producer,reversible,now,Measurement & Monitoring,Reconcile the offline-eval vs online-quality gap
+AT-63,human-led,med,partial,med,high,producer,reversible,now,"Safety, Red-teaming & Guardrails",Design a red-team campaign
+AT-64,copilot,low,gated,high,high,producer,reversible,now,"Safety, Red-teaming & Guardrails",Build and maintain a jailbreak and abuse eval corpus
+AT-65,human-led,high,gated,high,high,none,reversible,now,"Safety, Red-teaming & Guardrails",Spec guardrail policy and content filters
+AT-66,copilot,med,gated,high,high,none,reversible,now,"Safety, Red-teaming & Guardrails",Calibrate refusal and over-refusal rate
+AT-67,human-led,high,partial,high,high,producer,reversible,now,"Safety, Red-teaming & Guardrails",Triage a safety incident or harmful output
+AT-68,human-led,high,gated,high,high,none,reversible,now,"Safety, Red-teaming & Guardrails",Run a pre-release safety eval gate
+AT-69,human-led,med,partial,med,med,none,reversible,now,Inference Economics & Model Portfolio,Model portfolio build-vs-buy review
+AT-70,copilot,med,partial,med,none,none,reversible,now,Inference Economics & Model Portfolio,Inference cost-per-task budget and unit economics
+AT-71,human-led,med,partial,med,med,none,reversible,now,Inference Economics & Model Portfolio,Eval roadmap tied to capability and eval gaps
+AT-72,human-led,high,none,low,high,producer,reversible,now,Inference Economics & Model Portfolio,"Data-rights, licensing, and privacy posture for training and traces"
+AT-73,human-led,med,partial,med,med,none,reversible,now,Inference Economics & Model Portfolio,Capability roadmap tied to eval gaps
+AT-74,copilot,low,none,low,none,none,reversible,now,Commercial & Stakeholder,Design usage or token-based pricing for an AI product
+AT-75,copilot,low,none,low,none,none,reversible,now,Commercial & Stakeholder,Define AI feature tier-gating and rate limits
+AT-76,copilot,low,none,low,none,none,reversible,now,Commercial & Stakeholder,Model the gross-margin impact of an AI feature
+AT-77,copilot,low,none,low,med,none,reversible,now,Commercial & Stakeholder,Write a GTM or launch brief for an AI capability
+AT-78,copilot,low,none,low,none,consumer,reversible,now,Commercial & Stakeholder,Triage sales and CS requests for the AI product
+AT-79,copilot,low,none,low,med,none,reversible,now,Commercial & Stakeholder,Build sales enablement for an AI feature
+AT-80,copilot,low,none,low,med,consumer,reversible,now,Commercial & Stakeholder,Run AI win-loss analysis
+AT-81,human-led,low,none,low,med,none,reversible,now,Commercial & Stakeholder,Prepare an exec or board update on AI quality and economics
+AT-82,human-led,low,none,low,med,none,reversible,now,Commercial & Stakeholder,Respond to a why is the AI wrong escalation
+AT-83,human-led,med,none,low,high,none,reversible,now,Commercial & Stakeholder,Author the AI trust and transparency narrative for buyers
+AT-84,copilot,low,partial,low,none,consumer,reversible,now,Commercial & Stakeholder,Build an AI adoption and engagement scorecard
+AT-85,human-led,high,none,low,high,producer,reversible,now,Commercial & Stakeholder,Handle AI data-use consent and disclosure in the product
+AT-86,copilot,low,gated,low,none,none,reversible,now,Commercial & Stakeholder,Competitive AI capability and pricing teardown
+EVL-01,autonomous,low,partial,low,med,producer,reversible,now,Measurement & Monitoring,Verify trace instrumentation
+EVL-02,autonomous,low,partial,low,med,consumer,reversible,now,Eval & Spec Definition (hub),Pull a smart trace sample for review
+EVL-03,human-led,low,none,low,med,producer,reversible,now,Eval & Spec Definition (hub),Run an open-coding pass
+EVL-04,copilot,low,partial,med,med,producer,reversible,now,Eval & Spec Definition (hub),Axial-code notes into a failure taxonomy
+EVL-05,copilot,low,partial,med,med,producer,reversible,now,Eval & Spec Definition (hub),Quantify failure rates and triage each mode
+EVL-06,copilot,med,partial,high,med,producer,reversible,now,Eval & Spec Definition (hub),Build a from-prod failure dataset
+EVL-07,copilot,low,gated,med,none,producer,reversible,now,Eval & Spec Definition (hub),Write a code or assertion grader
+EVL-08,copilot,med,partial,high,med,producer,reversible,now,Eval & Spec Definition (hub),Build and validate an LLM-judge
+EVL-09,copilot,med,partial,high,med,producer,reversible,now,Eval & Spec Definition (hub),Recalibrate a judge against fresh labels
+EVL-10,copilot,med,partial,high,med,producer,reversible,now,Eval & Spec Definition (hub),Generate and validate structured synthetic data
+EVL-11,copilot,med,partial,high,med,producer,reversible,now,Eval & Spec Definition (hub),Curate golden and adversarial sets; version splits
+EVL-12,autonomous,med,gated,high,med,none,reversible,now,Eval & Spec Definition (hub),Configure eval-gated CI (assertions then judges)
+EVL-13,copilot,med,gated,med,med,consumer,reversible,now,Measurement & Monitoring,Wire online scoring and drift alerts
+EVL-14,copilot,med,partial,high,med,none,reversible,now,Measurement & Monitoring,Investigate an eval-score regression (RCA)
+EVL-15,copilot,low,partial,med,none,consumer,reversible,now,Measurement & Monitoring,Build the agent transition-failure matrix
+EVL-16,copilot,high,gated,high,med,none,reversible,now,Measurement & Monitoring,Plan eval-gated canary/shadow and rollback
