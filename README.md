@@ -84,7 +84,15 @@ request
   └─(6) TOOLS    pick by fit+cost; MCP only through the governance gate
 ```
 
-Full detail in [`SKILL.md`](SKILL.md) and [`references/schema-and-autonomy.md`](references/schema-and-autonomy.md). A complete end-to-end run is in [`examples/worked-example.md`](examples/worked-example.md).
+Full detail in [`SKILL.md`](SKILL.md) and [`references/schema-and-autonomy.md`](references/schema-and-autonomy.md).
+
+### Examples
+
+| Walkthrough | What it covers |
+|---|---|
+| [`examples/worked-example.md`](examples/worked-example.md) | End-to-end: route → eval spine → judge → prompt gate → stats → ship gate → monitor |
+| [`examples/judge-validation-walkthrough.md`](examples/judge-validation-walkthrough.md) | AT-11 → AT-12 → `judge_validation.py` → TRUSTED (under-powered → certified) |
+| [`examples/ship-behind-gate-walkthrough.md`](examples/ship-behind-gate-walkthrough.md) | AT-16 → AT-20 → paired compare → `eval_gate.py` GO/NO-GO (regression + coverage gap) |
 
 ### The autonomy gate (the key inversion)
 
@@ -121,7 +129,7 @@ scripts/              # 9 stdlib tools + shared helpers + README
 data/                 # 102-task catalog, 6-axis bundle, use-case index (vendored)
 assets/               # output templates
 evals/                # run_evals.py + evals.json + fixtures (the self-test suite)
-examples/             # an end-to-end worked run
+examples/             # end-to-end + focused walkthroughs (judge validation, ship gate)
 ```
 
 ## Self-tests & CI

@@ -65,6 +65,14 @@ request
 If the request fits no task: **compose the closest invariant + overlay and say so**
 (see step 7) — do not force a bad fit.
 
+### Examples (focused walkthroughs)
+
+| Walkthrough | When to read it |
+|---|---|
+| [`examples/worked-example.md`](examples/worked-example.md) | Full end-to-end pass (support-agent change) |
+| [`examples/judge-validation-walkthrough.md`](examples/judge-validation-walkthrough.md) | AT-11/AT-12 judge design + calibration → `TRUSTED` |
+| [`examples/ship-behind-gate-walkthrough.md`](examples/ship-behind-gate-walkthrough.md) | AT-16 bar + AT-20 CI + `eval_gate.py` GO/NO-GO |
+
 ### (1) Route by cluster → playbook
 
 Match the work to a cluster, then read **only** that playbook (progressive disclosure).
