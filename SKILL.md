@@ -65,6 +65,14 @@ request
 If the request fits no task: **compose the closest invariant + overlay and say so**
 (see step 7) — do not force a bad fit.
 
+### Examples (focused walkthroughs)
+
+| Walkthrough | When to read it |
+|---|---|
+| [`examples/worked-example.md`](examples/worked-example.md) | Full end-to-end pass (support-agent change) |
+| [`examples/judge-validation-walkthrough.md`](examples/judge-validation-walkthrough.md) | AT-11/AT-12 judge design + calibration → `TRUSTED` |
+| [`examples/ship-behind-gate-walkthrough.md`](examples/ship-behind-gate-walkthrough.md) | AT-16 bar + AT-20 CI + `eval_gate.py` GO/NO-GO |
+
 ### (1) Route by cluster → playbook
 
 Match the work to a cluster, then read **only** that playbook (progressive disclosure).
@@ -176,9 +184,11 @@ and route most traffic to a cheap model — frontier only for the hard call (mir
 | Instrumentation schema | OpenTelemetry GenAI (`gen_ai.*`) — don't invent a schema |
 
 **MCP governance gate (always-applied, load-bearing):** selecting/evaluating an MCP
-server (AT-26) is `safety_exposure:high`. Use **Runlayer-managed servers only**; never
-install/enable an unmanaged ("shadow") server; flag any config not managed by Runlayer.
-Governance approval is human-owned even when reliability testing is automated.
+server (AT-26) is `safety_exposure:high`. Use only servers from your **organization-approved
+MCP registry** (e.g. Runlayer-managed, IT-vetted, or security-signed catalog entries).
+Never install/enable shadow servers without approval; flag configs that bypass org audit
+logging and access controls. Governance approval is human-owned even when reliability
+testing is automated.
 
 ### (7) Out-of-the-box requests (the escape hatch)
 
@@ -211,6 +221,12 @@ the user) will reach for these — don't:
 
 **Red flags — STOP:** editing a prod prompt in place · quoting a number the *model* computed instead of a script · `run_unattended` on `eval ∈ {none,partial}` · trusting a judge you didn't validate · reaching for `--gate-on point` to "just get TRUSTED" · pasting a metric with no CI.
 
+## Team overrides
+
+See `CONFIG.example.md` for optional team-level defaults (routing floor, blast policy,
+judge/eval-gate bars, MCP allowlist, trigger-eval settings). Copy and customize for your
+org; the skill ships with conservative upstream defaults.
+
 ## Self-test
 
 This skill ships its own eval suite. After any edit, run it:
@@ -219,9 +235,10 @@ This skill ships its own eval suite. After any edit, run it:
 python evals/run_evals.py
 ```
 
-It checks routing, autonomy-gate decisions (incl. **negative** guards that must catch an
-unsafe-combo regression), and stats self-checks against expected outcomes. See
-`evals/README.md`.
+The **49 auto-verified scenarios** cover gate, routing, and stats scripts only — not
+trigger routing (`trigger_scenarios` are printed for manual/subagent A/B). It checks
+autonomy-gate decisions (incl. **negative** guards that must catch an unsafe-combo
+regression) and stats self-checks against expected outcomes. See `evals/README.md`.
 
 ## Reference map (one level deep)
 
