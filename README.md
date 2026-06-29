@@ -5,7 +5,7 @@
 [![self-test](https://github.com/vishalform/pm-for-aidlc/actions/workflows/ci.yml/badge.svg)](https://github.com/vishalform/pm-for-aidlc/actions/workflows/ci.yml)
 ![python](https://img.shields.io/badge/python-3.8%2B%20stdlib--only-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
-![self-tests](https://img.shields.io/badge/self--tests-49%2F49-brightgreen)
+![self-tests](https://img.shields.io/badge/script%20self--tests-49%2F49-brightgreen)
 
 > **AIDLC** here means *the lifecycle of building the AI system as the product* (evals, prompts, RAG, agents, the training flywheel, delivery, monitoring, safety, economics). It is **not** AWS's "AI-DLC" (using AI to ship ordinary software faster) — same letters, orthogonal craft.
 
@@ -35,7 +35,7 @@ A coding agent (Claude Code, Cursor, Codex, …) acting as — or assisting — 
 | **11 cluster playbooks** (`references/`) | Discovery, Eval & Spec, System & Agent, Training Flywheel, Delivery, Measurement, Safety, Inference Economics, Commercial — plus the task catalog and 16 use-case playbooks. |
 | **102-task catalog + axes** (`data/`) | The full `AT-`/`EVL-` library with all six risk axes per task, vendored so the skill is self-contained. |
 | **Output templates** (`assets/`) | Eval-spec, experiment readout, trace-coding sheet, autonomy-gate decision record, use-case eval plan. |
-| **Self-test suite** (`evals/`) | 49 auto-verified scenarios — including **negative safety guards** that must go red if a fix is reverted (not tautological pins). |
+| **Self-test suite** (`evals/`) | 49 auto-verified **script** scenarios (gate + routing + stats) — including **negative safety guards** that must go red if a fix is reverted. Trigger routing (`trigger_scenarios`) is manual/subagent only. |
 
 ## Quickstart
 
@@ -44,7 +44,7 @@ git clone https://github.com/vishalform/pm-for-aidlc
 cd pm-for-aidlc
 
 # everything is stdlib-only — no install step
-python evals/run_evals.py            # 49/49 auto-verified
+python evals/run_evals.py            # 49/49 script self-tests (gate+routing+stats)
 python scripts/eval_stats.py selftest
 python scripts/cost_calc.py selftest
 
@@ -84,7 +84,15 @@ request
   └─(6) TOOLS    pick by fit+cost; MCP only through the governance gate
 ```
 
-Full detail in [`SKILL.md`](SKILL.md) and [`references/schema-and-autonomy.md`](references/schema-and-autonomy.md). A complete end-to-end run is in [`examples/worked-example.md`](examples/worked-example.md).
+Full detail in [`SKILL.md`](SKILL.md) and [`references/schema-and-autonomy.md`](references/schema-and-autonomy.md).
+
+### Examples
+
+| Walkthrough | What it covers |
+|---|---|
+| [`examples/worked-example.md`](examples/worked-example.md) | End-to-end: route → eval spine → judge → prompt gate → stats → ship gate → monitor |
+| [`examples/judge-validation-walkthrough.md`](examples/judge-validation-walkthrough.md) | AT-11 → AT-12 → `judge_validation.py` → TRUSTED (under-powered → certified) |
+| [`examples/ship-behind-gate-walkthrough.md`](examples/ship-behind-gate-walkthrough.md) | AT-16 → AT-20 → paired compare → `eval_gate.py` GO/NO-GO (regression + coverage gap) |
 
 ### The autonomy gate (the key inversion)
 
@@ -121,12 +129,20 @@ scripts/              # 9 stdlib tools + shared helpers + README
 data/                 # 102-task catalog, 6-axis bundle, use-case index (vendored)
 assets/               # output templates
 evals/                # run_evals.py + evals.json + fixtures (the self-test suite)
-examples/             # an end-to-end worked run
+examples/             # end-to-end + focused walkthroughs (judge validation, ship gate)
 ```
 
 ## Self-tests & CI
 
-The suite is a real regression guard, not a description of current behavior. It ships **negative guards** (an actuating `safety:high` task must *not* run unattended; an omitted blast must *not* authorize one; a paired regression must be NO-GO; a coverage-gap candidate must be NO-GO; homographs like "memory leak" must *not* route to Safety) plus golden-value math checks. `python evals/run_evals.py` exits non-zero on any failure and runs in CI on every push (see [`.github/workflows/ci.yml`](.github/workflows/ci.yml)).
+The suite is a real regression guard for **scripts**, not a description of current behavior.
+The **49/49 auto-verified scenarios** cover `gate_scenarios`, `routing_scenarios`, and
+`stats_scenarios` only — **`trigger_scenarios` are printed for manual/subagent A/B** and
+are not counted in the pass total. It ships **negative guards** (an actuating `safety:high`
+task must *not* run unattended; an omitted blast must *not* authorize one; a paired
+regression must be NO-GO; a coverage-gap candidate must be NO-GO; homographs like "memory
+leak" must *not* route to Safety) plus golden-value math checks. `python evals/run_evals.py`
+exits non-zero on any failure and runs in CI on every push (see
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml)). Team override keys: [`CONFIG.example.md`](CONFIG.example.md).
 
 ## Contributing
 

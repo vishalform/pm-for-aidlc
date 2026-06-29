@@ -4,6 +4,16 @@
 
 The RCA, alerting, dashboards, and drift hunts survive from classic PM, but they now run over **eval scores and a behavior distribution that can shift even when you change nothing** — because a provider updated the model underneath you, or the input mix moved. Offline evals catch *known* failures; online scoring catches the distribution shift you didn't anticipate. Measurement here does not end the lifecycle; it **restarts** it.
 
+## Contents
+- [When this applies](#when-this-applies)
+- [The tasks](#the-tasks)
+- [The method (monitor → triage → restart)](#the-method-monitor--triage--restart-the-loop)
+- [The online scoring loop (EVL-01→AT-55/EVL-13→AT-56)](#the-online-scoring-loop)
+- [The RCA loop (AT-61/EVL-14)](#the-rca-loop)
+- [The drift → restart loop (AT-57→AT-58)](#the-drift--restart-loop)
+- [Worked example: silent provider update](#worked-example-eval-score-dropped-after-silent-model-provider-update)
+- [Tools](#tools) · [Pitfalls](#pitfalls) · [Heuristics](#execution-heuristics)
+
 ## When this applies
 
 - You need to know if prod quality is holding — **score live traffic** (`AT-55`/`EVL-13`).
@@ -55,6 +65,78 @@ EVL-01 verify instrumentation (replayable: inputs+output+tool calls+context+vers
 - **Offline↔online gap is a dataset bug, not a model bug** (`AT-62`): when offline says good and prod says bad, the eval set is unrepresentative — find the missing cases and add them.
 - **Three axes trade off** (`AT-59`): you can't manage quality without seeing cost and latency beside it, per task/run.
 - **Capture the edit, not just the thumbs** (`AT-60`): the edit shows the fix — route it to the dataset and close the loop to the user.
+
+## The online scoring loop
+
+You cannot score prod until every run is replayable — then wire reference-free scorers and trust metrics before tuning thresholds.
+
+```text
+EVL-01 audit instrumentation (inputs + output + tool calls + context + versions + cost)
+  → pick reference-free scorers for prod (no gold answer available)
+  → AT-55/EVL-13 sample live traffic; dashboard the rolling score + CI
+  → alert on the CI LOWER BOUND breaching the floor — not the point estimate
+  → AT-56 groundedness monitor runs autonomous alongside quality score
+  → establish a stable baseline window before threshold tuning (stopping rule)
+```
+
+Why each step is non-negotiable:
+- **Instrumentation audit checklist** (`EVL-01`): pull ~20 recent runs and confirm each logs inputs, full output, tool calls, retrieved context, prompt/model/tool versions, and cost. Map fields to `gen_ai.*` OTel; file gaps before wiring scorers — a missing version field makes RCA impossible later.
+- **Reference-free scorer selection** (`AT-55`/`EVL-13`): prod has no reference answer — use faithfulness-to-context, groundedness, or rubric judges scored against the trace, not against a golden label. Offline golden-set scorers do not transfer directly.
+- **Alert on the CI lower bound** (`EVL-13`): the point estimate bounces on small samples; page only when the lower bound of the rolling window breaches the pre-registered floor. This is the measurement equivalent of pre-registering the bar.
+- **Stopping rule — stable baseline first**: do not tune alert thresholds until you have ≥2 weeks of stable scoring at a fixed sampling rate. Thresholds set on day-one noise become alert fatigue by week three.
+
+## The RCA loop
+
+When a score drops — offline or online — treat it as a measurement problem before a model problem.
+
+```text
+confirm the drop is real (not sampling noise or a dashboard bug)
+  → eliminate JUDGE first: re-run frozen holdout with code scorers + recalibrated judge
+  → if judge holds: diff changed components (prompt / model / retrieval / tool)
+  → timestamp-match score inflection to deploys, provider changelogs, and data pipeline shifts
+  → rank remaining suspects: model → data → system
+  → write the verdict (cause, evidence, next action, owner)
+```
+
+Four suspects — ordered elimination:
+- **Judge** (check first): re-score a frozen holdout with deterministic assertions, then the LLM-judge. If the holdout is flat but prod dropped, the judge drifted or the prod distribution moved — not necessarily the model. Run `EVL-09` recalibration if judge agreement shifted.
+- **Model**: diff prompt hash, model ID/version, temperature, and tool schemas between baseline and regression window. A silent provider update shows up as a version string change with no deploy on your side.
+- **Data**: input mix shift — new user cohort, seasonal query pattern, or retrieval corpus update. Segment the drop; if one slice accounts for >80% of the delta, it's a data problem.
+- **System**: infra regressions — timeout truncation, cache staleness, rate-limit fallbacks returning degraded output. Trace exemplars from the drop window against baseline traces.
+
+Verdict output expectations (`AT-61`/`EVL-14`): one paragraph with **confirmed cause**, **evidence** (holdout diff, deploy timestamp, segment chart), **ruled-out suspects**, and **next action** (fix / recalibrate judge / add eval cases / rollback). No open-ended "still investigating."
+
+## The drift → restart loop
+
+Drift detection is not an endpoint — it decides whether to open an RCA or hand failures back to Discovery and Eval-Spec.
+
+```text
+AT-57 set baseline (rolling 14-day score distribution + segment slices)
+  → score a rolling window; flag when distribution shifts beyond pre-set bounds
+  → if aggregate looks fine, segment by user cohort / query type / tool path
+  → AT-58 cluster low-scoring runs into a triage queue (frequency × severity)
+  → hand off novel failure patterns → Discovery (AT-01) + Eval-Spec (EVL-06)
+  → if drift localizes to a component, open the RCA loop instead
+```
+
+Why segmentation before panic:
+- **Baseline definition** (`AT-57`): freeze a 14-day window of online scores *after* instrumentation and scorers are stable. Record aggregate mean, CI, and per-segment baselines — not just the headline number.
+- **Segment when aggregate looks fine**: provider updates and input-mix shifts often hide in one slice. If overall score is flat but the "new-user onboarding" slice dropped 12 points, the aggregate lied.
+- **Hand-off criteria back to Discovery and Eval-Spec**: route to Discovery (`AT-58` ≈ `AT-01`) when clustered failures reveal a *novel pattern* not covered by the current eval set. Route to Eval-Spec (`EVL-06`) when the pattern is named but unrepresented in the golden set — add cases, re-validate the judge, update the bar. Do not hand off noise: require ≥N exemplar traces and a one-line failure-mode name.
+
+## Worked example: eval score dropped after silent model provider update
+
+**Trigger:** Online faithfulness score drops from 0.82 → 0.71 over 48h. No deploy on your side. Alert fired on the CI lower bound (`EVL-13`).
+
+**Step 1 — Confirm real (`EVL-14`):** Re-query the dashboard; drop persists across two rolling windows. Not a sampling glitch.
+
+**Step 2 — Eliminate judge first:** Re-score the frozen 200-case holdout offline. Code assertions: flat. LLM-judge on holdout: flat at 0.91 agreement with human labels. Judge is not the cause.
+
+**Step 3 — Timestamp-match:** Plot score by hour. Inflection at Tuesday 03:00 UTC. Cross-reference provider status page — silent minor model update to `gpt-4o-2024-08-06` → `gpt-4o-2024-11-20`. Your gateway logged the new version string; no prompt change.
+
+**Step 4 — Segment:** Aggregate drop is −0.11, but the "multi-turn summarization" slice dropped −0.23 while "single-turn Q&A" is flat. New model truncates long contexts differently.
+
+**Verdict:** *Cause: silent provider model update affecting long-context summarization. Evidence: version string change at inflection time, segment chart, flat holdout. Ruled out: judge, prompt, retrieval. Next action: pin previous model version (`EVL-16` rollback rule), add 30 long-context cases to eval set (`EVL-06`), re-run offline gate before re-enabling auto-rollforward.*
 
 ## Tools
 
