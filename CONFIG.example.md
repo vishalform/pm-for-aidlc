@@ -42,12 +42,23 @@ treat this as the canonical contract for team customization.
 | `mcp_policy` | `org_registry_only` | Only servers from the organization-approved MCP registry. |
 | `mcp_allowlist` | `[]` | Optional explicit server IDs/names your org has vetted (empty = follow registry policy). |
 
-## Trigger eval (manual / subagent)
+## Trigger eval tiers
+
+| Tier | Mechanism | CI | API keys |
+|---|---|---|---|
+| **Tier 1** (default) | `evals/trigger_classifier.py` — rule-based proxy parsing `SKILL.md` trigger/NOT phrases | Yes — auto-verified by `run_evals.py` | None |
+| **Tier 2** (future / optional) | LLM-judge with/without-skill A/B on `trigger_scenarios` | No — manual or custom pipeline | Required |
+
+Tier 1 catches near-miss anti-triggers (SaaS pricing, signup funnels, AWS AI-DLC coding agent) and
+positive AI-system signals (eval, hallucination, jailbreak, groundedness, cost/quality dashboards).
+It does **not** prove a live model will always fire correctly — run Tier 2 before high-stakes rollout.
+
+### Tier 2 config (optional, not wired in CI)
 
 | Key | Default | Notes |
 |---|---|---|
-| `trigger_eval_enabled` | `false` | `trigger_scenarios` in `evals/evals.json` are not auto-verified by `run_evals.py`. |
-| `trigger_eval_model` | (unset) | Model used for with/without-skill A/B on trigger prompts when you run manual eval. |
+| `trigger_eval_enabled` | `false` | Set true only when running manual/subagent A/B (Tier 2). |
+| `trigger_eval_model` | (unset) | Model for with/without-skill A/B on trigger prompts; requires API key. |
 
 ## Example (YAML-style)
 
@@ -68,6 +79,6 @@ paired_regression_required: true
 mcp_policy: org_registry_only
 mcp_allowlist: []
 
-trigger_eval_enabled: false
-trigger_eval_model: null
+trigger_eval_enabled: false   # Tier 2 only
+trigger_eval_model: null      # e.g. gpt-4o — requires API key
 ```
