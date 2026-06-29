@@ -8,7 +8,8 @@ Auto-verifies, against the REAL scripts:
   - routing_scenarios  free-text -> expected candidate ids / cluster (and weak-match floor).
   - stats_scenarios    shells eval_stats/judge_validation/contamination and checks exit
                        codes + JSON fields (catches the pass^k / judge-CI bug classes).
-trigger_scenarios are printed for manual / subagent A/B (triggering needs the model).
+  - trigger_scenarios  rule-based proxy via trigger_classifier.py (Tier 1, no API keys).
+                       Tier 2 LLM-judge A/B is optional/future (see CONFIG.example.md).
 
 Exit non-zero if any auto-verified assertion fails -> usable as a CI gate.
 
@@ -27,6 +28,17 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPTS = os.path.normpath(os.path.join(HERE, "..", "scripts"))
 FIXTURES = os.path.join(HERE, "fixtures")
+
+_trigger_mod = None
+
+
+def _trigger():
+    global _trigger_mod
+    if _trigger_mod is None:
+        sys.path.insert(0, HERE)
+        import trigger_classifier as tc  # noqa: E402
+        _trigger_mod = tc
+    return _trigger_mod
 
 
 def _run(script: str, args: list, want_json: bool):
@@ -55,7 +67,7 @@ def _gate_args(sc: dict) -> list:
                           ("--safety", "safety"), ("--fly", "fly")):
             if a.get(key) is not None:
                 args += [flag, a[key]]
-        if a.get("blast") is not None:  # null = omit -> unknown (the C2 path)
+        if a.get("blast") is not None:
             args += ["--blast", a["blast"]]
     if sc.get("actuation"):
         args += ["--actuation", sc["actuation"]]
@@ -112,6 +124,16 @@ def check_route(sc: dict, default_top: int, verbose: bool):
     return (not fails, fails)
 
 
+def check_trigger(sc: dict, skill_path: str, verbose: bool):
+    tc = _trigger()
+    tc.load_skill_patterns(skill_path)
+    ok, fails = tc.check_scenario(sc)
+    if verbose:
+        pred = tc.should_trigger(sc["prompt"])
+        print(f"    -> predicted should_trigger={pred}")
+    return ok, fails
+
+
 def check_stat(sc: dict, verbose: bool):
     parts = [p.replace("FIXTURES", FIXTURES) for p in sc["cmd"]]
     script, rest = parts[0], parts[1:]
@@ -150,7 +172,10 @@ def _run_section(title, scenarios, fn, verbose):
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--evals", default=os.path.join(HERE, "evals.json"))
+    p.add_argument("--skill", default=os.path.normpath(os.path.join(HERE, "..", "SKILL.md")))
     p.add_argument("--top", type=int, default=8, help="default top-N for routing hits")
+    p.add_argument("--skip-triggers", action="store_true",
+                   help="skip Tier-1 trigger_scenarios auto-verification")
     p.add_argument("--verbose", action="store_true")
     args = p.parse_args(argv)
 
@@ -169,11 +194,16 @@ def main(argv=None) -> int:
     total_pass += pa; total_fail += fa
 
     trig = suite.get("trigger_scenarios", [])
-    if trig:
-        print("\n== TRIGGER scenarios (manual / subagent check — not auto-verified) ==")
-        for sc in trig:
-            mark = "SHOULD fire" if sc["should_trigger"] else "should NOT fire"
-            print(f"  [{mark}] {sc['id']}: {sc['prompt']!r}")
+    if trig and not args.skip_triggers:
+        pa, fa = _run_section(
+            "TRIGGER scenarios (Tier-1 rule proxy)",
+            trig,
+            lambda sc: check_trigger(sc, args.skill, args.verbose),
+            args.verbose,
+        )
+        total_pass += pa; total_fail += fa
+    elif trig and args.skip_triggers:
+        print("\n== TRIGGER scenarios (skipped — use trigger_classifier.py or drop --skip-triggers) ==")
 
     total = total_pass + total_fail
     print(f"\nAUTO-VERIFIED: {total_pass}/{total} passed, {total_fail} failed.")
