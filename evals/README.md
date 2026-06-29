@@ -12,6 +12,10 @@ python evals/run_evals.py --verbose  # show each script's actual output
 
 Exit code is non-zero if any auto-verified assertion fails, so this can run in CI.
 
+The runner reports **AUTO-VERIFIED: N/N passed** for gate + routing + stats only.
+`trigger_scenarios` are listed at the end for manual/subagent checks and are **not**
+included in that count.
+
 ## What's tested
 
 `evals.json` has four kinds of scenario (3 auto-verified + 1 manual):
