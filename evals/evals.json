@@ -135,6 +135,14 @@
     {"id": "route-NEG-user-leak", "prompt": "fix the file descriptor leak in the user service", "expect_cluster_excludes": "Safety", "top": 3, "_note": "M3-2: generic 'user' co-token must NOT route to Safety (held-out)"},
     {"id": "route-SAFETY-api-keys", "prompt": "the model can be prompted to print its api keys", "expect_cluster_contains": "Safety", "top": 3, "_note": "M3-6: secret exfiltration without the word 'leak'"},
     {"id": "route-SAFETY-confidential-records", "prompt": "the assistant revealed confidential customer records to another user", "expect_cluster_contains": "Safety", "top": 3, "_note": "M3-6: data exposure paraphrase"},
+    {"id": "route-P2-hallucination-making-up", "prompt": "model is making things up in customer chat", "expect_task_ids_any": ["AT-56"], "expect_cluster_contains": "Measurement", "top": 3, "_note": "PR2: held-out paraphrase for groundedness/hallucination"},
+    {"id": "route-P2-fabricating-not-in-docs", "prompt": "the assistant keeps fabricating facts that aren't in the retrieved docs", "expect_task_ids_any": ["AT-56", "AT-23"], "expect_cluster_contains": "Measurement", "top": 3, "_note": "PR2: held-out paraphrase for retrieval groundedness"},
+    {"id": "route-P2-rca-metrics-tanked", "prompt": "our quality metrics tanked since Tuesday, figure out why", "expect_task_ids_any": ["AT-61", "EVL-14"], "expect_cluster_contains": "Measurement", "top": 3, "_note": "PR2: held-out RCA paraphrase"},
+    {"id": "route-P2-judge-grader-agreement", "prompt": "does our automated grader agree with human raters on tone checks", "expect_task_ids_any": ["AT-12", "EVL-08", "EVL-09"], "expect_cluster_contains": "Eval", "top": 3, "_note": "PR2: held-out judge-validation paraphrase"},
+    {"id": "route-P2-prompt-ci-block-merge", "prompt": "block merges if the new system prompt regresses our eval suite", "expect_task_ids_any": ["AT-20", "EVL-12", "AT-49"], "expect_cluster_contains": "Delivery", "top": 3, "_note": "PR2: held-out prompt-regression CI paraphrase"},
+    {"id": "route-P2-drift-no-ship", "prompt": "responses feel different lately even though we didn't ship anything", "expect_task_ids_any": ["AT-57"], "expect_cluster_contains": "Measurement", "top": 3, "_note": "PR2: held-out behavior-drift paraphrase"},
+    {"id": "route-P2-offline-online-gap", "prompt": "evals look green but customers are complaining in prod", "expect_task_ids_any": ["AT-62"], "expect_cluster_contains": "Measurement", "top": 3, "_note": "PR2: held-out offline/online gap paraphrase"},
+    {"id": "route-P2-canary-5pct-rollback", "prompt": "roll out the new model to 5% and roll back if scores dip", "expect_task_ids_any": ["AT-51", "EVL-16"], "expect_cluster_contains": "Delivery", "top": 3, "_note": "PR2: held-out canary/rollback paraphrase"},
     {"id": "route-NEG-weak-match", "prompt": "fix the css on the login button", "expect_weak_match": true}
   ],
   "stats_scenarios": [
